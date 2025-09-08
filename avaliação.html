@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Avaliação de Vídeos - Jurado</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    body {
+      background: #121212;
+      color: white;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: #1a1a1a;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(255, 64, 0, 0.3);
+      overflow: hidden;
+    }
+
+    .header {
+      padding: 30px;
+      text-align: center;
+      background: linear-gradient(135deg, #000000, #2d0000);
+      color: white;
+    }
+
+    .header h2 {
+      font-size: 2rem;
+      color: #ff4000;
+    }
+
+    .welcome {
+      font-size: 1.1em;
+      color: #ccc;
+    }
+
+    .video-nav {
+      padding: 20px;
+      background: #222;
+      text-align: center;
+    }
+
+    .video-nav select {
+      padding: 12px;
+      border: 1px solid #444;
+      border-radius: 8px;
+      background: #333;
+      color: white;
+      font-size: 16px;
+      width: 80%;
+      max-width: 500px;
+    }
+
+    .video-frame {
+      text-align: center;
+      padding: 20px;
+    }
+
+    .video-title {
+      font-size: 1.5em;
+      color: #ff4000;
+      margin: 15px 0;
+    }
+
+    .video-placeholder {
+      width: 100%;
+      height: 400px;
+      background: #222;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      border: 1px dashed #555;
+      color: #aaa;
+    }
+
+    .video-placeholder i {
+      font-size: 48px;
+      margin-bottom: 10px;
+      color: #555;
+    }
+
+    #videoIframe {
+      width: 100%;
+      height: 400px;
+      border-radius: 12px;
+      border: 1px solid #444;
+    }
+
+    .avaliacao-container {
+      padding: 30px;
+    }
+
+    .categoria {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px;
+      margin: 10px 0;
+      background: #222;
+      border-radius: 10px;
+      border-left: 4px solid #ff4000;
+    }
+
+    .categoria label {
+      font-size: 1.1em;
+      flex: 1;
+      text-align: left;
+    }
+
+    .categoria select {
+      padding: 10px;
+      border: 1px solid #444;
+      border-radius: 8px;
+      background: #333;
+      color: white;
+      width: 150px;
+      font-size: 16px;
+    }
+
+    .actions {
+      text-align: center;
+      padding: 30px;
+    }
+
+    .btn {
+      padding: 14px 24px;
+      background: linear-gradient(to right, #ff4000, #e63900);
+      color: white;
+      border: none;
+      border-radius: 30px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(255, 64, 0, 0.5);
+    }
+
+    .btn:disabled {
+      background: #666;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .resultado {
+      margin: 20px 0;
+      text-align: center;
+      font-size: 1.2em;
+      color: #27ae60;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <h2><i class="fas fa-star"></i> Avaliação de Vídeos</h2>
+      <p class="welcome">Bem-vindo, <span id="nomeJurado">Jurado</span>!</p>
+    </div>
+
+    <div class="video-nav">
+      <label>Selecione o vídeo: </label>
+      <select id="videoSelect" onchange="carregarVideo()"></select>
+    </div>
+
+    <div class="video-frame">
+      <div class="video-title" id="tituloVideo">Selecione um vídeo</div>
+      <div id="videoContainer"></div> <!-- Vídeo ou mensagem de erro -->
+    </div>
+
+    <div class="avaliacao-container">
+      <h3 style="text-align:center; margin-bottom:20px; color:#ff4000;">Avalie as categorias abaixo:</h3>
+      <div id="tabelaAvaliacao"></div>
+    </div>
+
+    <div class="actions">
+      <button id="btnSalvar" class="btn" onclick="salvarAvaliacao()">Salvar Avaliação</button>
+      <div id="resultado" class="resultado"></div>
+      <button id="btnFinalizar" class="btn" style="display:none;" onclick="window.location.href='resultado.html'">Finalizar e Ver Resultados</button>
+    </div>
+  </div>
+
+  <script>
+    const usuarioAtual = JSON.parse(localStorage.getItem("usuarioAtual"))?.nome || "jurado";
+    let avaliacoes = JSON.parse(localStorage.getItem("avaliacoes")) || {};
+    let videos = [];
+
+    // Carregar vídeos do gerente (ou usar lista vazia)
+    function carregarVideos() {
+      const banco = JSON.parse(localStorage.getItem("bancoDados"));
+      if (banco?.videos?.length) {
+        videos = banco.videos;
+      } else {
+        videos = [
+          { id: 1, titulo: "Vídeo 1 (não cadastrado)", url: null },
+          { id: 2, titulo: "Vídeo 2 (não cadastrado)", url: null },
+          { id: 3, titulo: "Vídeo 3 (não cadastrado)", url: null }
+        ];
+        alert("⚠️ Nenhum vídeo foi cadastrado pelo gerente ainda.");
+      }
+
+      const select = document.getElementById("videoSelect");
+      select.innerHTML = "";
+
+      let podeSelecionar = true;
+      videos.forEach(video => {
+        const opt = document.createElement("option");
+        opt.value = video.id;
+        opt.textContent = video.titulo;
+
+        const jaAvaliado = avaliacoes[video.id] && avaliacoes[video.id][usuarioAtual];
+        if (!jaAvaliado && !podeSelecionar) {
+          opt.disabled = true;
+        }
+        if (!jaAvaliado) podeSelecionar = false;
+
+        select.appendChild(opt);
+      });
+
+      if (select.options.length > 0) carregarVideo();
+    }
+
+    function carregarVideo() {
+      const id = document.getElementById("videoSelect").value;
+      const video = videos.find(v => v.id == id);
+
+      if (!video) return;
+
+      document.getElementById("tituloVideo").textContent = video.titulo;
+
+      const container = document.getElementById("videoContainer");
+      container.innerHTML = "";
+
+      // Mostra vídeo ou mensagem de erro
+      if (video.url) {
+        const iframe = document.createElement("iframe");
+        iframe.src = video.url;
+        iframe.id = "videoIframe";
+        iframe.allowfullscreen = true;
+        iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+        iframe.referrerPolicy = "strict-origin-when-cross-origin";
+
+        // Tratamento de erro
+        iframe.onerror = () => {
+          container.innerHTML = `
+            <div class="video-placeholder">
+              <i class="fas fa-video-slash"></i>
+              <p>O vídeo não pôde ser carregado.</p>
+              <small>Erro de reprodução ou incorporação bloqueada.</small>
+            </div>
+          `;
+        };
+
+        container.appendChild(iframe);
+      } else {
+        container.innerHTML = `
+          <div class="video-placeholder">
+            <i class="fas fa-video-slash"></i>
+            <p>Vídeo não disponível</p>
+            <small>Esse vídeo ainda não foi cadastrado pelo gerente.</small>
+          </div>
+        `;
+      }
+
+      carregarCategorias(id);
+    }
+
+    function carregarCategorias(videoId) {
+      const categorias = [
+        "Roteiro",
+        "Produção",
+        "Equipe de lipsinch/dublagem/karaokê",
+        "Figurino",
+        "Sinergia música/filmagem",
+        "Criatividade",
+        "Coreografia/performance",
+        "Artistas-revelação (elenco/atuação)",
+        "Caracterização de arte audiovisual"
+      ];
+
+      const tabela = document.getElementById("tabelaAvaliacao");
+      tabela.innerHTML = "";
+
+      const avaliado = avaliacoes[videoId] && avaliacoes[videoId][usuarioAtual];
+
+      categorias.forEach(cat => {
+        const div = document.createElement("div");
+        div.className = "categoria";
+
+        const label = document.createElement("label");
+        label.textContent = cat;
+
+        const select = document.createElement("select");
+        select.disabled = false;
+
+        for (let n = 0; n <= 10; n += 0.5) {
+          const opt = document.createElement("option");
+          opt.value = n;
+          opt.textContent = n.toFixed(1);
+          if (avaliado && avaliado.notas[cat] === n) {
+            opt.selected = true;
+          }
+          select.appendChild(opt);
+        }
+
+        div.appendChild(label);
+        div.appendChild(select);
+        tabela.appendChild(div);
+      });
+
+      document.getElementById("btnSalvar").disabled = !!avaliado;
+      document.getElementById("resultado").textContent = avaliado ? `Avaliado - Média: ${avaliado.media}` : "";
+      atualizarBotaoFinalizar();
+    }
+
+    function salvarAvaliacao() {
+      const id = document.getElementById("videoSelect").value;
+      const selects = document.querySelectorAll("#tabelaAvaliacao select");
+      let soma = 0;
+      const notas = {};
+
+      selects.forEach((select, i) => {
+        const valor = parseFloat(select.value);
+        soma += valor;
+        const cat = select.parentElement.querySelector("label").textContent;
+        notas[cat] = valor;
+      });
+
+      const media = (soma / selects.length).toFixed(2);
+
+      if (!avaliacoes[id]) avaliacoes[id] = {};
+      avaliacoes[id][usuarioAtual] = { notas, media };
+
+      localStorage.setItem("avaliacoes", JSON.stringify(avaliacoes));
+      document.getElementById("btnSalvar").disabled = true;
+      document.getElementById("resultado").textContent = `✅ Salvo! Média: ${media}`;
+      carregarVideos(); // Atualiza o select
+    }
+
+    function atualizarBotaoFinalizar() {
+      const todosAvaliados = videos.every(v => avaliacoes[v.id] && avaliacoes[v.id][usuarioAtual]);
+      document.getElementById("btnFinalizar").style.display = todosAvaliados ? "inline-block" : "none";
+    }
+
+    // Inicializar
+    document.getElementById("nomeJurado").textContent = usuarioAtual;
+    carregarVideos();
+  </script>
+</body>
+</html>
