@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Painel do Gerente</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    body {
+      background: #121212;
+      color: white;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      background: #1a1a1a;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(255, 64, 0, 0.3);
+      overflow: hidden;
+      border: 1px solid #333;
+    }
+
+    .header {
+      padding: 30px;
+      text-align: center;
+      background: linear-gradient(135deg, #000000, #2d0000);
+      color: white;
+    }
+
+    .header h2 {
+      font-size: 2rem;
+      color: #ff4000;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      color: #ccc;
+      font-size: 1.1em;
+    }
+
+    .content {
+      padding: 30px;
+    }
+
+    .section {
+      margin-bottom: 40px;
+    }
+
+    .section h3 {
+      font-size: 1.5em;
+      color: #ff4000;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: #ddd;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group button {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #444;
+      border-radius: 8px;
+      background: #222;
+      color: white;
+      font-size: 16px;
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(to right, #ff4000, #e63900);
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(255, 64, 0, 0.4);
+    }
+
+    /* Vídeos cadastrados */
+    .video-list {
+      display: grid;
+      gap: 20px;
+    }
+
+    .video-card {
+      background: #222;
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid #333;
+      transition: transform 0.3s;
+    }
+
+    .video-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .video-card h4 {
+      color: #ff4000;
+      margin-bottom: 10px;
+    }
+
+    .video-card p {
+      margin: 5px 0;
+      color: #ccc;
+      font-size: 0.95em;
+    }
+
+    .video-card iframe {
+      width: 100%;
+      height: 180px;
+      border-radius: 8px;
+      border: 1px solid #444;
+      margin-top: 10px;
+    }
+
+    .btn-danger {
+      background: #e74c3c;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .btn-danger:hover {
+      background: #c0392b;
+    }
+
+    /* Resultados */
+    .ranking {
+      list-style: none;
+      padding: 0;
+    }
+
+    .ranking li {
+      background: #222;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-left: 4px solid #ff4000;
+    }
+
+    .ranking li::before {
+      content: "🏆";
+      margin-right: 10px;
+      color: #f1c40f;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <h2><i class="fas fa-user-tie"></i> Painel do Gerente</h2>
+      <p>Controle total do sistema de avaliação</p>
+    </div>
+
+    <div class="content">
+      <!-- Adicionar Vídeo -->
+      <div class="section">
+        <h3><i class="fas fa-plus-circle"></i> Adicionar Vídeo</h3>
+        <div class="form-group">
+          <label>Título</label>
+          <input type="text" id="titulo" placeholder="Título do vídeo">
+        </div>
+        <div class="form-group">
+          <label>Criador / Equipe</label>
+          <input type="text" id="criador" placeholder="Nome da equipe">
+        </div>
+        <div class="form-group">
+          <label>URL do YouTube (embed)</label>
+          <input type="text" id="url" placeholder="https://www.youtube.com/embed/...">
+        </div>
+        <div class="form-group">
+          <label>Descrição</label>
+          <textarea id="descricao" placeholder="Descreva o vídeo..."></textarea>
+        </div>
+        <button class="btn-primary" onclick="adicionarVideo()"><i class="fas fa-save"></i> Cadastrar Vídeo</button>
+      </div>
+
+      <!-- Vídeos Cadastrados -->
+      <div class="section">
+        <h3><i class="fas fa-film"></i> Vídeos Cadastrados</h3>
+        <div id="listaVideos" class="video-list">
+          <!-- Preenchido por JS -->
+        </div>
+      </div>
+
+      <!-- Resultados -->
+      <div class="section">
+        <h3><i class="fas fa-chart-line"></i> Ranking Final</h3>
+        <ol id="ranking" class="ranking">
+          <!-- Preenchido por JS -->
+        </ol>
+        <button class="btn-primary" onclick="gerarRelatorio()"><i class="fas fa-file-pdf"></i> Baixar Relatório (PDF)</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>
+    let bancoDados = JSON.parse(localStorage.getItem("bancoDados")) || {
+      videos: [],
+      avaliacoes: {}
+    };
+
+    function salvarBanco() {
+      localStorage.setItem("bancoDados", JSON.stringify(bancoDados));
+    }
+
+    function adicionarVideo() {
+      const titulo = document.getElementById("titulo").value.trim();
+      const criador = document.getElementById("criador").value.trim();
+      const url = document.getElementById("url").value.trim();
+      const descricao = document.getElementById("descricao").value.trim();
+
+      if (!titulo || !criador || !url) {
+        alert("Preencha todos os campos obrigatórios.");
+        return;
+      }
+
+      const id = bancoDados.videos.length ? Math.max(...bancoDados.videos.map(v => v.id)) + 1 : 1;
+
+      bancoDados.videos.push({ id, titulo, criador, descricao, url });
+      salvarBanco();
+      renderizarVideos();
+      atualizarRanking();
+
+      document.getElementById("titulo").value = "";
+      document.getElementById("criador").value = "";
+      document.getElementById("url").value = "";
+      document.getElementById("descricao").value = "";
+    }
+
+    function excluirVideo(id) {
+      if (confirm("Tem certeza que deseja excluir este vídeo e suas avaliações?")) {
+        bancoDados.videos = bancoDados.videos.filter(v => v.id !== id);
+        delete bancoDados.avaliacoes[id];
+        salvarBanco();
+        renderizarVideos();
+        atualizarRanking();
+      }
+    }
+
+    function renderizarVideos() {
+      const div = document.getElementById("listaVideos");
+      div.innerHTML = "";
+
+      bancoDados.videos.forEach(video => {
+        const avs = bancoDados.avaliacoes[video.id] || [];
+        const media = avs.length ? (avs.map(a => parseFloat(a.media)).reduce((a,b) => a + b, 0) / avs.length).toFixed(2) : "–";
+
+        const card = document.createElement("div");
+        card.className = "video-card";
+        card.innerHTML = `
+          <h4>${video.titulo}</h4>
+          <p><strong>Criador:</strong> ${video.criador}</p>
+          <p><strong>Média:</strong> ${media} (${avs.length} avaliações)</p>
+          <iframe src="${video.url}" frameborder="0" allowfullscreen></iframe>
+          <button class="btn-danger" onclick="excluirVideo(${video.id})"><i class="fas fa-trash"></i> Excluir</button>
+        `;
+        div.appendChild(card);
+      });
+    }
+
+    function atualizarRanking() {
+      const ol = document.getElementById("ranking");
+      ol.innerHTML = "";
+
+      const ranking = bancoDados.videos
+        .map(v => {
+          const avs = bancoDados.avaliacoes[v.id] || [];
+          const media = avs.length ? (avs.map(a => parseFloat(a.media)).reduce((a,b) => a + b, 0) / avs.length) : 0;
+          return { ...v, media };
+        })
+        .sort((a, b) => b.media - a.media);
+
+      ranking.forEach((v, i) => {
+        const li = document.createElement("li");
+        li.textContent = `${v.titulo} - Média ${v.media.toFixed(2)}`;
+        ol.appendChild(li);
+      });
+    }
+
+    function gerarRelatorio() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      doc.setFontSize(16);
+      doc.setTextColor(255, 64, 0);
+      doc.text("Relatório Geral de Avaliações", 10, 20);
+
+      doc.setFontSize(12);
+      doc.setTextColor(200, 200, 200);
+      doc.text(`Gerado em: ${new Date().toLocaleString()}`, 10, 30);
+
+      let y = 40;
+      bancoDados.videos.forEach(video => {
+        if (y > 250) {
+          doc.addPage();
+          y = 20;
+        }
+
+        const avs = bancoDados.avaliacoes[video.id] || [];
+        const media = avs.length ? (avs.map(a => parseFloat(a.media)).reduce((a,b) => a + b, 0) / avs.length).toFixed(2) : "–";
+
+        doc.setFontSize(14);
+        doc.setTextColor(255, 64, 0);
+        doc.text(video.titulo, 10, y);
+        y += 10;
+
+        doc.setFontSize(12);
+        doc.setTextColor(200, 200, 200);
+        doc.text(`Criador: ${video.criador} | Média: ${media}`, 10, y);
+        y += 10;
+
+        avs.forEach(av => {
+          if (y > 250) {
+            doc.addPage();
+            y = 20;
+          }
+          doc.text(`• ${av.jurado}: ${av.media}`, 20, y);
+          y += 8;
+        });
+        y += 10;
+      });
+
+      doc.save("relatorio_geral.pdf");
+    }
+
+    renderizarVideos();
+    atualizarRanking();
+  </script>
+</body>
+</html>
